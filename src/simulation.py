@@ -51,6 +51,53 @@ def inserer_noeud(racine, prix, joueur):
         racine.droite = inserer_noeud(racine.droite, prix, joueur)
     return racine
 
+def jouer_une_manche(liste_noms_joueurs, cout_base=1.0, alpha=10.0):
+    """
+    Simule le déroulement complet d'une manche d'enchère.
+    
+    Args:
+        liste_noms_joueurs (list): Liste des noms des participants (ex: ["Bot1", "Bot2"]).
+        cout_base (float): Le coût fixe d'une mise.
+        alpha (float): Le coefficient de risque pour le calcul de la recette.
+        
+    Returns:
+        dict: Un dictionnaire contenant le nom du gagnant, son prix et la recette.
+    """
+    # 1. On part d'un arbre vide pour cette manche
+    racine_manche = None
+    
+    # 2. Chaque joueur choisit un prix et on l'insère
+    for nom in liste_noms_joueurs:
+        # Ici on peut varier les stratégies, pour l'instant on met de l'aléatoire
+        prix_choisi = random.randint(0, 50)
+        
+        # On utilise ta fonction d'insertion (celle qui prend la racine en argument)
+        from traitement_csv import inserer
+        racine_manche = inserer(racine_manche, prix_choisi, nom)
+    
+
+    from traitement_csv import gagnant
+    noeud_gagnant = gagnant(racine_manche)
+    
+
+    from traitement_csv import recette_vendeur
+    recette = recette_vendeur(racine_manche, cout_base, alpha)
+    
+    if noeud_gagnant:
+        return {
+            "nom_gagnant": noeud_gagnant.joueurs[0],
+            "prix_gagnant": noeud_gagnant.prix,
+            "recette_vendeur": recette
+        }
+    else:
+        return {
+            "nom_gagnant": "PERSONNE",
+            "prix_gagnant": None,
+            "recette_vendeur": recette
+        }
+
+
+
 
 def simuler_500_manches():
     joueurs = {
