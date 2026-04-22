@@ -123,6 +123,40 @@ def inserer(racine, dic_joueur_prix):
 
     return racine
 
+def trouver_successeur(racine, prix_cible):
+    ''' 
+    Trouve le nœud avec le plus petit prix strictement supérieur au prix_cible.
+    Utile pour trouver le prochain candidat si le prix le plus bas n'est pas unique.
+    '''
+    successeur_potentiel = None
+    courant = racine
+
+    while courant is not None:
+        if courant.prix > prix_cible:
+            successeur_potentiel = courant
+            courant = courant.gauche
+        else:
+            courant = courant.droite
+
+    return successeur_potentiel
+
+def trouver_predecesseur(racine, prix_cible):
+    ''' 
+    Trouve le nœud avec le plus grand prix strictement inférieur au prix_cible.
+    '''
+    predecesseur_potentiel = None
+    courant = racine
+
+    while courant is not None:
+        if courant.prix < prix_cible:
+            predecesseur_potentiel = courant
+            courant = courant.droite
+        else:
+            courant = courant.gauche
+
+    return predecesseur_potentiel
+
+
 def abr_prix(liste):
     ''' Pour former l'arbre en fonction des prix
     Args :
@@ -209,6 +243,92 @@ def gagnant(abr):
             return joueurs[0], prix # alors il gagne, on retourne le joueur et sa mise
     return None
 
+
+def trouver_min(noeud):
+    """
+    Parcourt l'arbre vers la gauche pour trouver le noeud ayant le prix le plus bas.
+    
+    Args:
+        noeud (Noeud): Le point de départ de la recherche.
+        
+    Returns:
+        Noeud: Le noeud contenant le prix minimum dans ce sous-arbre.
+    """
+    courant = noeud
+    while courant.gauche is not None:
+        courant = courant.gauche
+    return courant
+
+def supprimer_mise(racine, prix, nom_joueur):
+    """
+    Supprime la mise d'un joueur spécifique pour un prix donné. 
+    Si le joueur était le seul sur ce prix, le noeud est supprimé de l'ABR
+    tout en conservant la structure de recherche.
+    
+    Args:
+        racine (Noeud): La racine actuelle de l'arbre (ou sous-arbre).
+        prix (int): Le prix de la mise à supprimer.
+        nom_joueur (str): Le nom du joueur qui retire sa mise.
+        
+    Returns:
+        Noeud: La nouvelle racine du sous-arbre après suppression.
+    """
+    if racine is None:
+        return None
+
+    # Recherche du noeud à traiter
+    if prix < racine.prix:
+        racine.gauche = supprimer_mise(racine.gauche, prix, nom_joueur)
+    elif prix > racine.prix:
+        racine.droite = supprimer_mise(racine.droite, prix, nom_joueur)
+    else:
+        # Le prix est trouvé, on retire le joueur de la liste
+        if nom_joueur in racine.joueurs:
+            racine.joueurs.remove(nom_joueur)
+        
+        # Si d'autres joueurs ont misé ce prix, on s'arrête là
+        if len(racine.joueurs) > 0:
+            return racine
+        
+        # Sinon, suppression physique du noeud (Cas ABR classique)
+        # Cas 1 & 2 : Le noeud a 0 ou 1 enfant
+        if racine.gauche is None:
+            return racine.droite
+        elif racine.droite is None:
+            return racine.gauche
+        
+        # Cas 3 : Le noeud a 2 enfants
+        # On remplace par le successeur (le min du sous-arbre droit)
+        temp = trouver_min(racine.droite)
+        racine.prix = temp.prix
+        racine.joueurs = temp.joueurs
+        # On supprime le noeud qui a été déplacé
+        racine.droite = supprimer_mise(racine.droite, temp.prix, temp.joueurs[0])
+        
+    return racine
+
+def trouver_successeur(racine, prix_cible):
+    """
+    Identifie le noeud ayant le plus petit prix strictement supérieur au prix cible.
+    
+    Args:
+        racine (Noeud): La racine de l'ABR.
+        prix_cible (int): Le prix de référence.
+        
+    Returns:
+        Noeud: Le successeur trouvé ou None s'il n'existe pas.
+    """
+    successeur_potentiel = None
+    courant = racine
+
+    while courant is not None:
+        if courant.prix > prix_cible:
+            successeur_potentiel = courant
+            courant = courant.gauche
+        else:
+            courant = courant.droite
+
+    return successeur_potentiel
 
 
 #-----------Tests : ----------------------------------
